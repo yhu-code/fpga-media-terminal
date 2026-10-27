@@ -1,0 +1,66 @@
+# ========================================================
+# 1. 系统时钟与复位
+# ========================================================
+# 50MHz 板载晶振 (严格照抄官方 clk 属性：PULLUP)
+set_pin_assignment { clk } { LOCATION = K14; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+
+# 复位按键 (严格照抄官方 rst_n 属性：PULLUP)
+set_pin_assignment { rst_n } { LOCATION = H14; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+
+# 独立按键 (对应官方 key_0 和 key_1，属性照抄：PULLUP)
+set_pin_assignment { key1 } { LOCATION = F7; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+set_pin_assignment { key2 } { LOCATION = E7; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+
+# ========================================================
+# 1b. 拨码开关 SW0~SW7（扩展4：亮度/对比度实时调节）
+#    sw[3:0] = 亮度档位（有符号 -8..+7，全 OFF = 原始）
+#    sw[7:4] = 对比度档位（有符号 -8..+7，全 OFF = 原始）
+# 照抄官方 hardware_test 的属性（PULLUP）
+# ========================================================
+set_pin_assignment { sw[0] } { LOCATION = N14; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+set_pin_assignment { sw[1] } { LOCATION = K12; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+set_pin_assignment { sw[2] } { LOCATION = J12; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+set_pin_assignment { sw[3] } { LOCATION = M13; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+set_pin_assignment { sw[4] } { LOCATION = L13; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+set_pin_assignment { sw[5] } { LOCATION = P14; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+set_pin_assignment { sw[6] } { LOCATION = P16; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+set_pin_assignment { sw[7] } { LOCATION = P15; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+
+# 串口 RX（CH340 TXD -> FPGA，用于现实时间同步）
+set_pin_assignment { uart_rxd } { LOCATION = E4; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+
+# HYM8563 RTC 芯片 I2C 总线
+set_pin_assignment { i2c_sclk } { LOCATION = L16; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment { i2c_sdat } { LOCATION = M16; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+
+# ========================================================
+# 1c. 调试串口 TX（板卡 UART_TXD = P2，115200 8N1）
+# ========================================================
+set_pin_assignment { dbg_uart_tx } { LOCATION = P2; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
+
+# ========================================================
+# 2. HDMI TMDS 伪差分输出 
+# ========================================================
+# 严格照抄官方 O_tmds_ch*_p 的属性：LVDS33_E, DRIVESTRENGTH=8, PULLTYPE=NONE
+set_pin_assignment { HDMI_CLK_P } { LOCATION = B10; IOSTANDARD = LVDS33_E; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment { HDMI_D0_P }  { LOCATION = D11; IOSTANDARD = LVDS33_E; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment { HDMI_D1_P }  { LOCATION = C11; IOSTANDARD = LVDS33_E; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment { HDMI_D2_P }  { LOCATION = F10; IOSTANDARD = LVDS33_E; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+
+# ========================================================
+# 3. HDMI DDC —— 已移除
+# ========================================================
+# L16/M16 与 HYM8563 RTC 芯片是同一物理总线（板卡设计如此）。
+# EDID 读取结果在工程中从未使用，为避免与 RTC 的 I2C 双驱动冲突，
+# HDMI_DDC_SCL/SDA 端口已从顶层删除，这两个引脚由 RTC 独占：
+#   i2c_sclk = L16, i2c_sdat = M16（见上面 RTC 部分）
+
+# ========================================================
+# 4. SD 卡 SPI 接口
+# ========================================================
+# 官方全量约束中无 SD 卡配置，根据 AC201 管脚表及常用SPI规范：
+# 输出信号(MOSI, CLK, CS)驱动能力8，无上拉；输入信号(MISO)需要上拉，防止悬空
+set_pin_assignment { sd_ncs }  { LOCATION = R2; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment { sd_dclk } { LOCATION = M2; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment { sd_mosi } { LOCATION = L3; IOSTANDARD = LVCMOS33; DRIVESTRENGTH = 8; PULLTYPE = NONE; }
+set_pin_assignment { sd_miso } { LOCATION = K6; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
